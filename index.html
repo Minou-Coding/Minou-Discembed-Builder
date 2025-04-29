@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Embed Discord Builder</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1e1f22;
+      color: white;
+      margin: 0;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      display: flex;
+      gap: 2rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .form, .preview {
+      flex: 1;
+      background: #2f3136;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    input, textarea, button, select {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 15px;
+      border-radius: 6px;
+      border: none;
+      background: #40444b;
+      color: white;
+      font-size: 1rem;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #5865f2;
+      cursor: pointer;
+    }
+    .button-secondary {
+      background: #3c3f44;
+    }
+    .embed-block {
+      border-left: 5px solid #5865f2;
+      background: #2b2d31;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .embed-block h4 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .embed-block p {
+      margin: 0.5rem 0 0;
+      white-space: pre-line;
+    }
+    .thumbnail {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      float: right;
+      margin-left: 10px;
+    }
+    input[type="color"] {
+      height: 40px;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛠️ Minou Discembed Builder</h1>
+  <div class="container">
+    <div class="form">
+      <label>Webhook Discord</label>
+      <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
+
+      <label>Nom du bot</label>
+      <input type="text" id="username" value="📢 Annonce Contrats" />
+
+      <label>ID du rôle à mentionner</label>
+      <input type="text" id="roleId" placeholder="Ex: 123456789012345678" />
+
+      <label>ID du membre à mentionner</label>
+      <input type="text" id="memberId" placeholder="Ex: 987654321098765432" />
+
+      <div id="embeds-container"></div>
+
+      <button onclick="addEmbed()">➕ Ajouter une page</button>
+
+      <div class="button-row">
+        <button onclick="sendEmbed()">📤 Envoyer l'embed sur discord</button>
+        <button class="button-secondary" onclick="downloadEmbed()">💾 Sauvegarder</button>
+        <button class="button-secondary" onclick="document.getElementById('fileInput').click()">📂 Importer</button>
+        <input type="file" id="fileInput" style="display:none" onchange="importEmbed(event)" />
+      </div>
+    </div>
+
+    <div class="preview">
+      <h2>Aperçu</h2>
+      <div id="preview-area"></div>
+    </div>
+  </div>
+
+  <script>
+    let embedCount = 0;
+    let currentEmbeds = [];
+
+    function createEmbedForm(index, data = {}) {
+      return `
+        <div class="embed-form" data-index="${index}">
+          <label>Titre</label>
+          <input type="text" class="title" value="${data.title || ''}" oninput="updatePreview()" />
+          <label>Description</label>
+          <textarea rows="4" class="description" oninput="updatePreview()">${data.description || ''}</textarea>
+          <label>Couleur</label>
+          <input type="color" class="color" value="${data.color ? "#" + parseInt(data.color).toString(16).padStart(6, '0') : '#5865f2'}" oninput="updatePreview()" />
+          <label>URL Miniature</label>
+          <input type="text" class="thumbnail-url" placeholder="https://...image.png" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
+          <label>Pied de page</label>
+          <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
+          <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cette page</button>
+          <hr/>
+        </div>
+      `;
+    }
+
+    function renderEmbedsForms() {
+      const container = document.getElementById("embeds-container");
+      container.innerHTML = '';
+      for (let i = 0; i < embedCount; i++) {
+        const data = currentEmbeds[i] || {};
+        container.innerHTML += createEmbedForm(i, data);
+      }
+    }
+
+    function addEmbed(data = {}) {
+      currentEmbeds.push(data);
+      embedCount++;
+      renderEmbedsForms();
+      updatePreview();
+    }
+
+    function removeEmbed(index) {
+      currentEmbeds.splice(index, 1);
+      embedCount--;
+      renderEmbedsForms();
+      updatePreview();
+    }
+
+    function getEmbeds() {
+      const forms = document.querySelectorAll(".embed-form");
+      return [...forms].map(form => {
+        return {
+          title: form.querySelector(".title").value,
+          description: form.querySelector(".description").value,
+          color: parseInt(form.querySelector(".color").value.replace("#", ""), 16),
+          thumbnail: {
+            url: form.querySelector(".thumbnail-url").value
+          },
+          footer: {
+            text: form.querySelector(".footer").value
+          }
+        };
+      });
+    }
+
+    function updatePreview() {
+      const embeds = getEmbeds();
+      const previewArea = document.getElementById("preview-area");
+      previewArea.innerHTML = '';
+      embeds.forEach(embed => {
+        const block = document.createElement("div");
+        block.className = "embed-block";
+        block.style.borderColor = `#${(embed.color || 3447003).toString(16)}`;
+        block.innerHTML = `
+          ${embed.thumbnail.url ? `<img class="thumbnail" src="${embed.thumbnail.url}"/>` : ''}
+          <h4>${embed.title}</h4>
+          <p>${embed.description}</p>
+          <small>${embed.footer.text}</small>
+        `;
+        previewArea.appendChild(block);
+      });
+    }
+
+    function buildPayload() {
+      const roleId = document.getElementById("roleId").value;
+      const memberId = document.getElementById("memberId").value;
+      let mentions = [];
+      if (roleId) mentions.push(`<@&${roleId}>`);
+      if (memberId) mentions.push(`<@${memberId}>`);
+
+      return {
+        content: mentions.join(' ').trim(),
+        username: document.getElementById("username").value,
+        embeds: getEmbeds()
+      };
+    }
+
+    async function sendEmbed() {
+      const url = document.getElementById("webhook").value;
+      if (!url) return alert("URL de webhook manquante.");
+
+      const payload = buildPayload();
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      alert(response.ok ? "✅ Envoyé avec succès !" : "❌ Échec de l'envoi.");
+    }
+
+    function downloadEmbed() {
+      const data = buildPayload();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "multi-embed.json";
+      a.click();
+    }
+
+    function importEmbed(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = JSON.parse(e.target.result);
+        document.getElementById("username").value = data.username || "";
+        document.getElementById("roleId").value = "";
+        document.getElementById("memberId").value = "";
+        currentEmbeds = data.embeds || [];
+        embedCount = currentEmbeds.length;
+        renderEmbedsForms();
+        updatePreview();
+      };
+      reader.readAsText(file);
+    }
+
+    addEmbed(); // premier embed au chargement
+  </script>
+</body>
+</html>
