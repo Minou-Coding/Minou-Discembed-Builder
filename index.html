@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multi-Embed Discord Builder</title>
+  <title>Multi Embed Discord Builder</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -76,35 +76,31 @@
       float: right;
       margin-left: 10px;
     }
-    input[type="color"] {
-      height: 40px;
-      padding: 0;
-    }
   </style>
 </head>
 <body>
-  <h1>🛠️ Minou Discembed Builder</h1>
+  <h1>🔧 Multi-Embed Discord Builder</h1>
   <div class="container">
     <div class="form">
-      <label>Webhook Discord</label>
+      <label for="webhook">Webhook Discord</label>
       <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
 
-      <label>Nom du bot</label>
+      <label for="username">Nom du bot</label>
       <input type="text" id="username" value="📢 Annonce Contrats" />
 
-      <label>ID du rôle à mentionner</label>
-      <input type="text" id="roleId" placeholder="Ex: 123456789012345678" />
+      <label for="roleId">ID du Rôle (mention)</label>
+      <input type="text" id="roleId" placeholder="ex: 1234567890" />
 
-      <label>ID du membre à mentionner</label>
-      <input type="text" id="memberId" placeholder="Ex: 987654321098765432" />
+      <label for="memberId">ID du Membre (mention)</label>
+      <input type="text" id="memberId" placeholder="ex: 1234567890" />
 
       <div id="embeds-container"></div>
 
-      <button onclick="addEmbed()">➕ Ajouter une page</button>
+      <button onclick="addEmbed()">➕ Ajouter un Embed</button>
 
       <div class="button-row">
-        <button onclick="sendEmbed()">📤 Envoyer l'embed sur discord</button>
-        <button class="button-secondary" onclick="downloadEmbed()">💾 Sauvegarder</button>
+        <button onclick="sendEmbed()">📤 Envoyer</button>
+        <button class="button-secondary" onclick="downloadEmbed()">💾 Sauvegarder JSON</button>
         <button class="button-secondary" onclick="document.getElementById('fileInput').click()">📂 Importer</button>
         <input type="file" id="fileInput" style="display:none" onchange="importEmbed(event)" />
       </div>
@@ -128,12 +124,12 @@
           <label>Description</label>
           <textarea rows="4" class="description" oninput="updatePreview()">${data.description || ''}</textarea>
           <label>Couleur</label>
-          <input type="color" class="color" value="${data.color ? "#" + parseInt(data.color).toString(16).padStart(6, '0') : '#5865f2'}" oninput="updatePreview()" />
+          <input type="color" class="color" value="${data.color ? '#' + parseInt(data.color).toString(16).padStart(6, '0') : '#3498db'}" oninput="updatePreview()" />
           <label>URL Miniature</label>
-          <input type="text" class="thumbnail-url" placeholder="https://...image.png" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
+          <input type="text" class="thumbnail-url" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
           <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
-          <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cette page</button>
+          <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cet Embed</button>
           <hr/>
         </div>
       `;
@@ -165,10 +161,11 @@
     function getEmbeds() {
       const forms = document.querySelectorAll(".embed-form");
       return [...forms].map(form => {
+        const colorHex = form.querySelector(".color").value.replace("#", "");
         return {
           title: form.querySelector(".title").value,
           description: form.querySelector(".description").value,
-          color: parseInt(form.querySelector(".color").value.replace("#", ""), 16),
+          color: parseInt(colorHex, 16),
           thumbnail: {
             url: form.querySelector(".thumbnail-url").value
           },
@@ -186,7 +183,7 @@
       embeds.forEach(embed => {
         const block = document.createElement("div");
         block.className = "embed-block";
-        block.style.borderColor = `#${(embed.color || 3447003).toString(16)}`;
+        block.style.borderColor = `#${(embed.color || 3447003).toString(16).padStart(6, '0')}`;
         block.innerHTML = `
           ${embed.thumbnail.url ? `<img class="thumbnail" src="${embed.thumbnail.url}"/>` : ''}
           <h4>${embed.title}</h4>
@@ -200,27 +197,32 @@
     function buildPayload() {
       const roleId = document.getElementById("roleId").value;
       const memberId = document.getElementById("memberId").value;
-      let mentions = [];
-      if (roleId) mentions.push(`<@&${roleId}>`);
-      if (memberId) mentions.push(`<@${memberId}>`);
+      let content = '';
+
+      if (roleId) content += `<@&${roleId}> `;
+      if (memberId) content += `<@${memberId}>`;
 
       return {
-        content: mentions.join(' ').trim(),
+        webhook: document.getElementById("webhook").value,
         username: document.getElementById("username").value,
+        roleId,
+        memberId,
+        content: content.trim(),
         embeds: getEmbeds()
       };
     }
 
     async function sendEmbed() {
-      const url = document.getElementById("webhook").value;
+      const payload = buildPayload();
+      const url = payload.webhook;
       if (!url) return alert("URL de webhook manquante.");
 
-      const payload = buildPayload();
+      const { webhook, ...postData } = payload;
 
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(postData)
       });
 
       alert(response.ok ? "✅ Envoyé avec succès !" : "❌ Échec de l'envoi.");
@@ -242,9 +244,10 @@
       const reader = new FileReader();
       reader.onload = function (e) {
         const data = JSON.parse(e.target.result);
+        document.getElementById("webhook").value = data.webhook || "";
         document.getElementById("username").value = data.username || "";
-        document.getElementById("roleId").value = "";
-        document.getElementById("memberId").value = "";
+        document.getElementById("roleId").value = data.roleId || "";
+        document.getElementById("memberId").value = data.memberId || "";
         currentEmbeds = data.embeds || [];
         embedCount = currentEmbeds.length;
         renderEmbedsForms();
@@ -253,7 +256,7 @@
       reader.readAsText(file);
     }
 
-    addEmbed(); // premier embed au chargement
+    addEmbed(); // auto init
   </script>
 </body>
 </html>
