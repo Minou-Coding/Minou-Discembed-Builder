@@ -79,7 +79,7 @@
   </style>
 </head>
 <body>
-  <h1>🔧 Minou Discembed Builder/h1>
+  <h1>🔧 Minou Discembed Builder</h1>
   <div class="container">
     <div class="form">
       <label for="webhook">Webhook Discord</label>
@@ -99,7 +99,7 @@
       <button onclick="addEmbed()">➕ Ajouter une page</button>
 
       <div class="button-row">
-        <button onclick="sendEmbed()">📤 Envoyer</button>
+        <button onclick="sendEmbed()">📤 Envoyer l'embed sur discord</button>
         <button class="button-secondary" onclick="downloadEmbed()">💾 Sauvegarder</button>
         <button class="button-secondary" onclick="document.getElementById('fileInput').click()">📂 Importer</button>
         <input type="file" id="fileInput" style="display:none" onchange="importEmbed(event)" />
@@ -129,7 +129,7 @@
           <input type="text" class="thumbnail-url" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
           <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
-          <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cet page</button>
+          <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cette page</button>
           <hr/>
         </div>
       `;
