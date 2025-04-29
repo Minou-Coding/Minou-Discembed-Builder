@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multi Embed Discord Builder</title>
+  <title>🛠️ Minou Discembed Builder</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -76,23 +76,27 @@
       float: right;
       margin-left: 10px;
     }
+    input[type="color"] {
+      height: 40px;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
-  <h1>🔧 Minou Discembed Builder</h1>
+  <h1>🛠️ Minou Discembed Builder</h1>
   <div class="container">
     <div class="form">
-      <label for="webhook">Webhook Discord</label>
+      <label>Webhook Discord</label>
       <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
 
-      <label for="username">Nom du bot</label>
+      <label>Nom du bot</label>
       <input type="text" id="username" value="📢 Annonce Contrats" />
 
-      <label for="roleId">ID du Rôle (mention)</label>
-      <input type="text" id="roleId" placeholder="ex: 1234567890" />
+      <label>ID du rôle à mentionner</label>
+      <input type="text" id="roleId" placeholder="Ex: 123456789012345678" />
 
-      <label for="memberId">ID du Membre (mention)</label>
-      <input type="text" id="memberId" placeholder="ex: 1234567890" />
+      <label>ID du membre à mentionner</label>
+      <input type="text" id="memberId" placeholder="Ex: 987654321098765432" />
 
       <div id="embeds-container"></div>
 
@@ -124,9 +128,9 @@
           <label>Description</label>
           <textarea rows="4" class="description" oninput="updatePreview()">${data.description || ''}</textarea>
           <label>Couleur</label>
-          <input type="color" class="color" value="${data.color ? '#' + parseInt(data.color).toString(16).padStart(6, '0') : '#3498db'}" oninput="updatePreview()" />
+          <input type="color" class="color" value="${data.color ? "#" + parseInt(data.color).toString(16).padStart(6, '0') : '#5865f2'}" oninput="updatePreview()" />
           <label>URL Miniature</label>
-          <input type="text" class="thumbnail-url" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
+          <input type="text" class="thumbnail-url" placeholder="https://...image.png" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
           <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
           <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer cette page</button>
@@ -161,11 +165,10 @@
     function getEmbeds() {
       const forms = document.querySelectorAll(".embed-form");
       return [...forms].map(form => {
-        const colorHex = form.querySelector(".color").value.replace("#", "");
         return {
           title: form.querySelector(".title").value,
           description: form.querySelector(".description").value,
-          color: parseInt(colorHex, 16),
+          color: parseInt(form.querySelector(".color").value.replace("#", ""), 16),
           thumbnail: {
             url: form.querySelector(".thumbnail-url").value
           },
@@ -197,17 +200,16 @@
     function buildPayload() {
       const roleId = document.getElementById("roleId").value;
       const memberId = document.getElementById("memberId").value;
-      let content = '';
-
-      if (roleId) content += `<@&${roleId}> `;
-      if (memberId) content += `<@${memberId}>`;
+      let mentions = [];
+      if (roleId) mentions.push(`<@&${roleId}>`);
+      if (memberId) mentions.push(`<@${memberId}>`);
 
       return {
         webhook: document.getElementById("webhook").value,
         username: document.getElementById("username").value,
         roleId,
         memberId,
-        content: content.trim(),
+        content: mentions.join(' ').trim(),
         embeds: getEmbeds()
       };
     }
@@ -256,7 +258,7 @@
       reader.readAsText(file);
     }
 
-    addEmbed(); // auto init
+    addEmbed();
   </script>
 </body>
 </html>
