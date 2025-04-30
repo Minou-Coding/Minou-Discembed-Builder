@@ -231,7 +231,7 @@
           <label>URL Image</label>
           <input type="text" class="background-url" placeholder="Ex: https://i.imgur.com/ExampleImage.png" value="${data.image?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
-          <input type="text" class="footer" placeholder="Ex: le 01/01/2050 ou Samedi 01 janvier 2050" value="${data.footer?.text || ''}" oninput="updatePreview()" />
+          <input type="text" class="footer" placeholder="Ex: le 01/01/2050 ou Samedi 01 janvier 2050 ou Autre" value="${data.footer?.text || ''}" oninput="updatePreview()" />
           <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer</button>
           <hr/>
         </div>
