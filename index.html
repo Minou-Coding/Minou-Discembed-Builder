@@ -221,17 +221,17 @@
       return `
         <div class="embed-form" data-index="${index}">
           <label>Titre</label>
-          <input type="text" class="title" placeholder="Ex: 987654321098765432" value="${data.title || ''}" oninput="updatePreview()" />
+          <input type="text" class="title" placeholder="Ex: Mise a jour" value="${data.title || ''}" oninput="updatePreview()" />
           <label>Texte</label>
-          <textarea rows="4" class="description" oninput="updatePreview()">${data.description || ''}</textarea>
+          <textarea rows="4" class="description" placeholder="Ex: Bonjour a tous ! aujourd'hui..." oninput="updatePreview()">${data.description || ''}</textarea>
           <label>Couleur</label>
           <input type="color" class="color" value="${data.color ? '#' + parseInt(data.color).toString(16).padStart(6, '0') : '#5865f2'}" oninput="updatePreview()" />
           <label>URL Miniature</label>
-          <input type="text" class="thumbnail-url" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
+          <input type="text" class="thumbnail-url" placeholder="Ex: https://i.imgur.com/ExampleImage.png" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
           <label>URL Image</label>
-          <input type="text" class="background-url" value="${data.image?.url || ''}" oninput="updatePreview()" />
+          <input type="text" class="background-url" placeholder="Ex: https://i.imgur.com/ExampleImage.png" value="${data.image?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
-          <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
+          <input type="text" class="footer" placeholder="Ex: le 01/01/2050 ou Samedi 01 janvier 2050" value="${data.footer?.text || ''}" oninput="updatePreview()" />
           <button class="button-secondary" onclick="removeEmbed(${index})">❌ Supprimer</button>
           <hr/>
         </div>
