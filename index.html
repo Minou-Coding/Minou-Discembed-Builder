@@ -164,7 +164,7 @@
       <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
 
       <label>Nom du bot</label>
-      <input type="text" id="username" value="📢 Annonce Contrats" />
+      <input type="text" id="username" placeholder="Ex: 📢 Annonce" />
 
       <label>ID du rôle à mentionner</label>
       <input type="text" id="roleId" placeholder="Ex: 123456789012345678" />
@@ -222,13 +222,13 @@
         <div class="embed-form" data-index="${index}">
           <label>Titre</label>
           <input type="text" class="title" value="${data.title || ''}" oninput="updatePreview()" />
-          <label>Description</label>
+          <label>Texte</label>
           <textarea rows="4" class="description" oninput="updatePreview()">${data.description || ''}</textarea>
           <label>Couleur</label>
           <input type="color" class="color" value="${data.color ? '#' + parseInt(data.color).toString(16).padStart(6, '0') : '#5865f2'}" oninput="updatePreview()" />
           <label>URL Miniature</label>
           <input type="text" class="thumbnail-url" value="${data.thumbnail?.url || ''}" oninput="updatePreview()" />
-          <label>Image sous texte</label>
+          <label>URL Image</label>
           <input type="text" class="background-url" value="${data.image?.url || ''}" oninput="updatePreview()" />
           <label>Pied de page</label>
           <input type="text" class="footer" value="${data.footer?.text || ''}" oninput="updatePreview()" />
